@@ -1,0 +1,18 @@
+{
+  "name": "dict-sann-bot",
+  "version": "1.0.0",
+  "description": "dict-sanのサンプル用botです",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "debug": "node server.js && ngrok http 3000"
+  },
+  "keywords": [],
+  "author": "@dignity_sann",
+  "license": "ISC",
+  "dependencies": {
+    "@line/bot-sdk": "^6.8.3",
+    "express": "^4.17.1"
+  }
+}
