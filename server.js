@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const axios = require('axios');
 const line = require('@line/bot-sdk');
 const PORT = process.env.PORT || 3000;
 const CHANNEL_SECRET_KEY = process.env.CHANNEL_SECRET_KEY
@@ -31,14 +32,51 @@ app.post('/webhook', line.middleware(config), (req, res) => {
 const client = new line.Client(config);
 
 function handleEvent(event) {
+
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
 
-  return client.replyMessage(event.replyToken, {
+  let message = 'わからないよ';
+  switch (event.message.text) {
+    case '犬':
+      message = '検索するよ';
+      dogImage(event.source.userId);
+      break;
+  
+    default:
+      break;
+  }
+  let replyMessage = {
     type: 'text',
-    text: event.message.text //実際に返信の言葉を入れる箇所
-  });
+    text: message
+  }
+  return client.replyMessage(event.replyToken, replyMessage);
+}
+
+const dogImage = async (userId) => {
+  const limit = 1;
+  const offset = Math.floor(Math.random() * Math.floor(100));
+  const res = await axios.get(`http://api.photozou.jp/rest/search_public.json?type=photo&keyword=dog&limit=${limit}&offset=${offset}`);
+  const items = res.data;
+  if (items.stat !== 'ok') {
+    return client.pushMessage(userId, {
+      type: 'text',
+      text: 'なにかおかしい'
+    });
+  }
+  if (items.info.photo_num < 0) {
+    return client.pushMessage(userId, {
+      type: 'text',
+      text: 'なかったよ・・・'
+    });
+  } else {
+    return client.pushMessage(userId, {
+      type: 'image',
+      originalContentUrl: items.info.photo[0].original_image_url,
+      previewImageUrl: items.info.photo[0].thumbnail_image_url
+    });
+  }
 }
 
 app.listen(PORT);
