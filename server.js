@@ -57,21 +57,21 @@ function handleEvent(event) {
 const dogImage = async (userId) => {
   const limit = 1;
   const offset = Math.floor(Math.random() * Math.floor(100));
-  const res = await axios.get(`http://api.photozou.jp/rest/search_public.json?type=photo&keyword=dog&limit=${limit}&offset=${offset}`);
+  const res = await axios.get(`https://api.photozou.jp/rest/search_public.json?type=photo&keyword=dog&limit=${limit}&offset=${offset}`);
   const items = res.data;
   if (items.stat !== 'ok') {
-    return client.pushMessage(userId, {
+    await client.pushMessage(userId, {
       type: 'text',
       text: 'なにかおかしい'
     });
   }
   if (items.info.photo_num < 0) {
-    return client.pushMessage(userId, {
+    await client.pushMessage(userId, {
       type: 'text',
       text: 'なかったよ・・・'
     });
   } else {
-    return client.pushMessage(userId, {
+    await client.pushMessage(userId, {
       type: 'image',
       originalContentUrl: items.info.photo[0].original_image_url,
       previewImageUrl: items.info.photo[0].thumbnail_image_url
