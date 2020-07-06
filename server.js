@@ -15,21 +15,27 @@ const config = {
 const app = express();
 
 app.post('/webhook', line.middleware(config), (req, res) => {
-    console.log(req.body.events);
+  Promise
+    .all(req.body.events.map(handleEvent))
+    .then((result) => res.json(result));
+});
 
-    //ここのif分はdeveloper consoleの"接続確認"用なので削除して問題ないです。
-    if(req.body.events[0].replyToken === '00000000000000000000000000000000' && req.body.events[1].replyToken === 'ffffffffffffffffffffffffffffffff'){
-        res.send('Hello LINE BOT!(POST)');
-        console.log('疎通確認用');
-        return; 
-    }
-
-    Promise
-      .all(req.body.events.map(handleEvent))
-      .then((result) => res.json(result));
+app.get('/notice', line.middleware(config), (req, res) => {
+  Promise
+    .all(req.body.events.map(notice))
+    .then((result) => res.json(result));
 });
 
 const client = new line.Client(config);
+
+function notice(event) {
+  const message = {
+    type: 'text',
+    text: 'Hello World!'
+  };
+  
+  client.pushMessage('U80c44846baad73387e7e0a9987f3ed0c', message)
+}
 
 function handleEvent(event) {
 
@@ -54,30 +60,6 @@ function handleEvent(event) {
   return client.replyMessage(event.replyToken, replyMessage);
 }
 
-const dogImage = async (userId) => {
-  const limit = 1;
-  const offset = Math.floor(Math.random() * Math.floor(100));
-  const res = await axios.get(`https://api.photozou.jp/rest/search_public.json?type=photo&keyword=dog&limit=${limit}&offset=${offset}`);
-  const items = res.data;
-  if (items.stat !== 'ok') {
-    await client.pushMessage(userId, {
-      type: 'text',
-      text: 'なにかおかしい'
-    });
-  }
-  if (items.info.photo_num < 0) {
-    await client.pushMessage(userId, {
-      type: 'text',
-      text: 'なかったよ・・・'
-    });
-  } else {
-    await client.pushMessage(userId, {
-      type: 'image',
-      originalContentUrl: items.info.photo[0].original_image_url,
-      previewImageUrl: items.info.photo[0].thumbnail_image_url
-    });
-  }
-}
 
 app.listen(PORT);
 console.log(`Server running at ${PORT}`);
