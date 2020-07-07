@@ -86,7 +86,7 @@ async function notice() {
       return result
     });
     if (result.length > 0) {
-      message = `通知しますー`
+      message = `通知⚡️`
       result.forEach(v => {
         message += v.label + ' が空いてます！'
       })
